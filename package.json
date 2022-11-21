@@ -1,0 +1,26 @@
+{
+  "name": "lit-pkp-sdk",
+  "version": "1.0.2",
+  "description": "Extends PKPWallet to handle Ethereum JSON RPC signing requests",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@ethersproject/bytes": "^5.7.0",
+    "@metamask/eth-sig-util": "^5.0.2",
+    "ethers": "^5.7.2",
+    "hex2dec": "^1.1.2",
+    "lit-js-sdk": "^1.2.32",
+    "pkp-eth-signer": "^5.7.18"
+  },
+  "devDependencies": {
+    "eslint": "^8.27.0",
+    "eslint-config-prettier": "^8.5.0",
+    "prettier": "^2.7.1"
+  }
+}
