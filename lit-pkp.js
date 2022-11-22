@@ -144,7 +144,14 @@ export class LitPKP extends PKPWallet {
         if (address.toLowerCase() !== addressRequested.toLowerCase()) {
           throw new Error('PKPWallet address does not match address requested');
         }
+        // TODO: Temporary patch here to calculate gas limit
+        // https://github.com/ethers-io/ethers.js/blob/c80fcddf50a9023486e9f9acb1848aba4c19f7b6/packages/abstract-signer/src.ts/index.ts#L296
         transaction = getTransactionToSign(txParams);
+        if (transaction.gasLimit == null) {
+          transaction.gasLimit = await this.rpcProvider.estimateGas(
+            transaction
+          );
+        }
         const signedTx = await this.signTransaction(transaction);
         result = await this.sendTransaction(signedTx);
         break;
