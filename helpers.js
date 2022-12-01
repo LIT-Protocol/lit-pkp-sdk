@@ -38,7 +38,7 @@ export function getSignVersionByMessageFormat(data) {
     // https://github.com/MetaMask/eth-sig-util/blob/9f01c9d7922b717ddda3aa894c38fbba623e8bdf/src/sign-typed-data.ts#L193
     try {
       const { types, domain, primaryType, message } = JSON.parse(data);
-      delete types.EIP712Domain;
+      // delete types.EIP712Domain;
       const encodedData = TypedDataUtils.encodeData(
         primaryType,
         message,

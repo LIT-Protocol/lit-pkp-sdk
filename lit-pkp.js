@@ -44,7 +44,9 @@ export class LitPKP extends PKPWallet {
       });
     } else {
       const { types, domain, primaryType, message } = JSON.parse(msgParams);
-      delete types.EIP712Domain;
+      // if (types.EIP712Domain) {
+      //   delete types.EIP712Domain;
+      // }
       const typedData = { types, primaryType, domain, message };
       messageHash = TypedDataUtils.eip712Hash(typedData, version);
       // signature = await this._signTypedData(domain, types, message);
@@ -103,11 +105,12 @@ export class LitPKP extends PKPWallet {
         result = await this.signTypedData(msgParams, version);
         break;
       case 'eth_signTypedData_v1':
-        addressRequested = payload.params[0];
+        // Params are flipped in V1 - https://medium.com/metamask/scaling-web3-with-signtypeddata-91d6efc8b290
+        addressRequested = payload.params[1];
         if (address.toLowerCase() !== addressRequested.toLowerCase()) {
           throw new Error('PKPWallet address does not match address requested');
         }
-        msgParams = payload.params[1];
+        msgParams = payload.params[0];
         version = SignTypedDataVersion.V1;
         result = await this.signTypedData(msgParams, version);
         break;
