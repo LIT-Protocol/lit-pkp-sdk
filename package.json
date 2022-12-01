@@ -1,6 +1,6 @@
 {
   "name": "lit-pkp-sdk",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Extends PKPWallet to handle Ethereum JSON RPC signing requests",
   "main": "index.js",
   "type": "module",
