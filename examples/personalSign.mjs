@@ -15,6 +15,7 @@ const authSig = {
 
 // Message to sign
 const message = 'Free the web';
+const hexMsg = ethers.utils.hexlify(ethers.utils.toUtf8Bytes(message));
 
 // personal_sign parameters
 // DATA, N Bytes - message to sign.
@@ -22,7 +23,7 @@ const message = 'Free the web';
 // Reference: https://metamask.github.io/api-playground/api-documentation/#personal_sign
 const payload = {
   method: 'personal_sign',
-  params: [message, address],
+  params: [hexMsg, address],
 };
 
 // Initialize Lit PKP Wallet

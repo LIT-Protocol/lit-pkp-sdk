@@ -84,7 +84,7 @@ export class LitPKP extends PKPWallet {
         if (address.toLowerCase() !== addressRequested.toLowerCase()) {
           throw new Error('PKPWallet address does not match address requested');
         }
-        message = payload.params[1];
+        message = convertHexToUtf8(payload.params[1]);
         result = await this.signMessage(message);
         break;
       case 'personal_sign':

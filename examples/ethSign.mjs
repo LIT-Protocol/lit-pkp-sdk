@@ -38,7 +38,7 @@ await wallet.init();
 const sig = await wallet.signEthereumRequest(payload);
 
 // Verify signature
-const recoveredAddr = ethers.utils.verifyMessage(hexMsg, sig);
+const recoveredAddr = ethers.utils.verifyMessage(message, sig);
 console.log(
   'eth_sign verified? ',
   address.toLowerCase() === recoveredAddr.toLowerCase()
