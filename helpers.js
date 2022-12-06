@@ -2,11 +2,14 @@ import { ethers } from 'ethers';
 import { SignTypedDataVersion, TypedDataUtils } from '@metamask/eth-sig-util';
 
 export function convertHexToUtf8(value) {
-  if (ethers.utils.isHexString(value)) {
-    return ethers.utils.toUtf8String(value);
+  try {
+    if (ethers.utils.isHexString(value)) {
+      return ethers.utils.toUtf8String(value);
+    }
+    return value;
+  } catch (e) {
+    return value;
   }
-
-  return value;
 }
 
 export const getTransactionToSign = txParams => {

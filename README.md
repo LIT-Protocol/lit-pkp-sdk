@@ -12,3 +12,5 @@ Supports the following signing methods:
 - signTypedData_v4
 - signTransaction
 - sendTransaction
+
+Check out examples [here](https://github.com/LIT-Protocol/lit-pkp-sdk/tree/main/examples).

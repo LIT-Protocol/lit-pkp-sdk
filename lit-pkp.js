@@ -10,6 +10,7 @@ import {
   getSignVersionByMessageFormat,
   getTransactionToSign,
 } from './helpers.js';
+import { ethers } from 'ethers';
 
 /**
  * The PKP class inherits PKPWallet Signer and adds the ability to respond to Ethereum JSON RPC signing requests.
@@ -36,7 +37,10 @@ export class LitPKP extends PKPWallet {
     if (version === SignTypedDataVersion.V1) {
       // https://github.com/MetaMask/eth-sig-util/blob/9f01c9d7922b717ddda3aa894c38fbba623e8bdf/src/sign-typed-data.ts#L435
       messageHash = typedSignatureHash(msgParams);
-      signature = await this.runLitAction(messageHash, 'sig1');
+      signature = await this.runLitAction(
+        ethers.utils.arrayify(messageHash),
+        'sig1'
+      );
       encodedSig = joinSignature({
         r: '0x' + signature.r,
         s: '0x' + signature.s,
@@ -44,13 +48,13 @@ export class LitPKP extends PKPWallet {
       });
     } else {
       const { types, domain, primaryType, message } = JSON.parse(msgParams);
-      // if (types.EIP712Domain) {
-      //   delete types.EIP712Domain;
-      // }
       const typedData = { types, primaryType, domain, message };
       messageHash = TypedDataUtils.eip712Hash(typedData, version);
       // signature = await this._signTypedData(domain, types, message);
-      signature = await this.runLitAction(messageHash, 'sig1');
+      signature = await this.runLitAction(
+        ethers.utils.arrayify(messageHash),
+        'sig1'
+      );
       encodedSig = joinSignature({
         r: '0x' + signature.r,
         s: '0x' + signature.s,
