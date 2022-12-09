@@ -1,6 +1,6 @@
-import { LitPKP } from '../index.js';
+import { LitPKP } from '../src/index.js';
 import { ethers } from 'ethers';
-import { address, publicKey, authSig } from './config.js';
+import { address, publicKey, authSig } from '../test/config.js';
 
 // Message to sign
 const message = 'Free the web';

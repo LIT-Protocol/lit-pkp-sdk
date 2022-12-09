@@ -1,10 +1,10 @@
-import { LitPKP } from '../index.js';
+import { LitPKP } from '../src/index.js';
 import { ethers } from 'ethers';
 import {
   SignTypedDataVersion,
   recoverTypedSignature,
 } from '@metamask/eth-sig-util';
-import { address, publicKey, authSig } from './config.js';
+import { address, publicKey, authSig } from '../test/config.js';
 
 // Typed data to sign
 // Example from https://github.com/MetaMask/test-dapp/blob/main/src/index.js#L1033

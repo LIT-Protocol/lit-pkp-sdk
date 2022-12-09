@@ -1,6 +1,6 @@
-import { LitPKP } from '../index.js';
+import { LitPKP } from '../src/index.js';
 import { BigNumber } from 'ethers';
-import { address, publicKey, authSig } from './config.js';
+import { address, publicKey, authSig } from '../test/config.js';
 
 // Transaction to sign and send
 const from = address;
