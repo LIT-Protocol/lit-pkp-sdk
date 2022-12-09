@@ -17,7 +17,6 @@ class LitPKP extends PKPWallet {
    * Sign typed data with PKPWallet Signer
    *
    * @param {Object | string} msgParams message to sign
-   * @param {SignTypedDataVersion} version method version to use
    *
    * @returns {Promise<string>} signature
    */
@@ -31,10 +30,9 @@ class LitPKP extends PKPWallet {
   }
 
   /**
-   * Sign typed data v1 is legacy
+   * Handle legacy sign typed data (V1)
    *
    * @param {Object | string} msgParams message to sign
-   * @param {SignTypedDataVersion} version method version to use
    *
    * @returns {Promise<string>} signature
    */
