@@ -1,15 +1,8 @@
-import { PKPWallet } from 'pkp-eth-signer';
+import { PKPWallet } from '@lit-protocol/pkp-ethers.js';
 import { joinSignature } from '@ethersproject/bytes';
-import {
-  SignTypedDataVersion,
-  TypedDataUtils,
-  typedSignatureHash,
-} from '@metamask/eth-sig-util';
-import {
-  convertHexToUtf8,
-  getSignVersionByMessageFormat,
-  getTransactionToSign,
-} from './helpers.js';
+import { typedSignatureHash } from '@metamask/eth-sig-util';
+import { convertHexToUtf8, getTransactionToSign } from './helpers.js';
+import { ethers } from 'ethers';
 
 /**
  * The PKP class inherits PKPWallet Signer and adds the ability to respond to Ethereum JSON RPC signing requests.
@@ -17,47 +10,44 @@ import {
  * @public
  * @override
  */
-export class LitPKP extends PKPWallet {
+class LitPKP extends PKPWallet {
   // -- Public methods --
 
   /**
    * Sign typed data with PKPWallet Signer
    *
-   * @param {Object} msgParams message to sign
-   * @param {SignTypedDataVersion} version method version to use
+   * @param {Object | string} msgParams message to sign
    *
    * @returns {Promise<string>} signature
    */
-  async signTypedData(msgParams, version) {
-    let messageHash;
-    let signature;
-    let encodedSig;
-
-    if (version === SignTypedDataVersion.V1) {
-      // https://github.com/MetaMask/eth-sig-util/blob/9f01c9d7922b717ddda3aa894c38fbba623e8bdf/src/sign-typed-data.ts#L435
-      messageHash = typedSignatureHash(msgParams);
-      signature = await this.runLitAction(messageHash, 'sig1');
-      encodedSig = joinSignature({
-        r: '0x' + signature.r,
-        s: '0x' + signature.s,
-        v: signature.recid,
-      });
-    } else {
-      const { types, domain, primaryType, message } = JSON.parse(msgParams);
-      // if (types.EIP712Domain) {
-      //   delete types.EIP712Domain;
-      // }
-      const typedData = { types, primaryType, domain, message };
-      messageHash = TypedDataUtils.eip712Hash(typedData, version);
-      // signature = await this._signTypedData(domain, types, message);
-      signature = await this.runLitAction(messageHash, 'sig1');
-      encodedSig = joinSignature({
-        r: '0x' + signature.r,
-        s: '0x' + signature.s,
-        v: signature.recid,
-      });
+  async signTypedData(msgParams) {
+    const { types, domain, primaryType, message } = JSON.parse(msgParams);
+    if (types.EIP712Domain) {
+      delete types.EIP712Domain;
     }
+    const signature = await this._signTypedData(domain, types, message);
+    return signature;
+  }
 
+  /**
+   * Handle legacy sign typed data (V1)
+   *
+   * @param {Object | string} msgParams message to sign
+   *
+   * @returns {Promise<string>} signature
+   */
+  async signTypedDataLegacy(msgParams) {
+    // https://github.com/MetaMask/eth-sig-util/blob/9f01c9d7922b717ddda3aa894c38fbba623e8bdf/src/sign-typed-data.ts#L435
+    const messageHash = typedSignatureHash(msgParams);
+    const sig = await this.runLitAction(
+      ethers.utils.arrayify(messageHash),
+      'sig1'
+    );
+    const encodedSig = joinSignature({
+      r: '0x' + sig.r,
+      s: '0x' + sig.s,
+      v: sig.recid,
+    });
     return encodedSig;
   }
 
@@ -69,14 +59,13 @@ export class LitPKP extends PKPWallet {
    * @returns {(Promise<string> | Promise<Object>)} signed message, signed data, signed transaction, or sent transaction
    */
   async signEthereumRequest(payload) {
-    let address = await this.getAddress();
-    let addressRequested;
-    let message;
-    let msgParams;
-    let version;
-    let txParams;
-    let transaction;
-    let result;
+    let address = ethers.utils.computeAddress(this.publicKey);
+    let addressRequested = null;
+    let message = null;
+    let msgParams = null;
+    let txParams = null;
+    let transaction = null;
+    let result = null;
 
     switch (payload.method) {
       case 'eth_sign':
@@ -84,7 +73,7 @@ export class LitPKP extends PKPWallet {
         if (address.toLowerCase() !== addressRequested.toLowerCase()) {
           throw new Error('PKPWallet address does not match address requested');
         }
-        message = payload.params[1];
+        message = convertHexToUtf8(payload.params[1]);
         result = await this.signMessage(message);
         break;
       case 'personal_sign':
@@ -96,13 +85,30 @@ export class LitPKP extends PKPWallet {
         result = await this.signMessage(message);
         break;
       case 'eth_signTypedData':
-        addressRequested = payload.params[0];
-        if (address.toLowerCase() !== addressRequested.toLowerCase()) {
-          throw new Error('PKPWallet address does not match address requested');
+        // Double check version to use since signTypedData can mean V1 (Metamask) or V3 (WalletConnect)
+        // References: https://docs.metamask.io/guide/signing-data.html#a-brief-history
+        // https://github.com/WalletConnect/walletconnect-monorepo/issues/546
+        if (ethers.utils.isAddress(payload.params[0])) {
+          // V3 or V4
+          addressRequested = payload.params[0];
+          if (address.toLowerCase() !== addressRequested.toLowerCase()) {
+            throw new Error(
+              'PKPWallet address does not match address requested'
+            );
+          }
+          msgParams = payload.params[1];
+          result = await this.signTypedData(msgParams);
+        } else {
+          // V1
+          addressRequested = payload.params[1];
+          if (address.toLowerCase() !== addressRequested.toLowerCase()) {
+            throw new Error(
+              'PKPWallet address does not match address requested'
+            );
+          }
+          msgParams = payload.params[0];
+          result = await this.signTypedDataLegacy(msgParams);
         }
-        msgParams = payload.params[1];
-        version = getSignVersionByMessageFormat(msgParams);
-        result = await this.signTypedData(msgParams, version);
         break;
       case 'eth_signTypedData_v1':
         // Params are flipped in V1 - https://medium.com/metamask/scaling-web3-with-signtypeddata-91d6efc8b290
@@ -111,26 +117,16 @@ export class LitPKP extends PKPWallet {
           throw new Error('PKPWallet address does not match address requested');
         }
         msgParams = payload.params[0];
-        version = SignTypedDataVersion.V1;
-        result = await this.signTypedData(msgParams, version);
+        result = await this.signTypedDataLegacy(msgParams);
         break;
       case 'eth_signTypedData_v3':
-        addressRequested = payload.params[0];
-        if (address.toLowerCase() !== addressRequested.toLowerCase()) {
-          throw new Error('PKPWallet address does not match address requested');
-        }
-        msgParams = payload.params[1];
-        version = SignTypedDataVersion.V3;
-        result = await this.signTypedData(msgParams, version);
-        break;
       case 'eth_signTypedData_v4':
         addressRequested = payload.params[0];
         if (address.toLowerCase() !== addressRequested.toLowerCase()) {
           throw new Error('PKPWallet address does not match address requested');
         }
         msgParams = payload.params[1];
-        version = SignTypedDataVersion.V4;
-        result = await this.signTypedData(msgParams, version);
+        result = await this.signTypedData(msgParams);
         break;
       case 'eth_signTransaction':
         txParams = payload.params[0];
@@ -147,16 +143,14 @@ export class LitPKP extends PKPWallet {
         if (address.toLowerCase() !== addressRequested.toLowerCase()) {
           throw new Error('PKPWallet address does not match address requested');
         }
-        // TODO: Temporary patch here to calculate gas limit
-        // https://github.com/ethers-io/ethers.js/blob/c80fcddf50a9023486e9f9acb1848aba4c19f7b6/packages/abstract-signer/src.ts/index.ts#L296
         transaction = getTransactionToSign(txParams);
-        if (transaction.gasLimit == null) {
-          transaction.gasLimit = await this.rpcProvider.estimateGas(
-            transaction
-          );
-        }
         const signedTx = await this.signTransaction(transaction);
         result = await this.sendTransaction(signedTx);
+        break;
+      }
+      case 'eth_sendRawTransaction': {
+        transaction = payload.params[0];
+        result = await this.sendTransaction(transaction);
         break;
       }
       default:
@@ -169,7 +163,7 @@ export class LitPKP extends PKPWallet {
   }
 }
 
-export function isSignRequestSupported(payload) {
+function isSignRequestSupported(payload) {
   const supportedMethods = [
     'eth_sign',
     'personal_sign',
@@ -179,6 +173,9 @@ export function isSignRequestSupported(payload) {
     'eth_signTypedData_v4',
     'eth_signTransaction',
     'eth_sendTransaction',
+    'eth_sendRawTransaction',
   ];
   return supportedMethods.includes(payload.method);
 }
+
+export { LitPKP, isSignRequestSupported };
