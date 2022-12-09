@@ -73,7 +73,6 @@ const $d88405f5646092dc$export$c49a2eedf2923bf5 = (txParams)=>{
         let addressRequested = null;
         let message = null;
         let msgParams = null;
-        let version = null;
         let txParams = null;
         let transaction = null;
         let result = null;
@@ -91,7 +90,9 @@ const $d88405f5646092dc$export$c49a2eedf2923bf5 = (txParams)=>{
                 result = await this.signMessage(message);
                 break;
             case "eth_signTypedData":
-                // Double check version to use
+                // Double check version to use since signTypedData can mean V1 (Metamask) or V3 (WalletConnect)
+                // References: https://docs.metamask.io/guide/signing-data.html#a-brief-history
+                // https://github.com/WalletConnect/walletconnect-monorepo/issues/546
                 if ((0, $afujC$ethers).utils.isAddress(payload.params[0])) {
                     // V3 or V4
                     addressRequested = payload.params[0];
@@ -137,6 +138,10 @@ const $d88405f5646092dc$export$c49a2eedf2923bf5 = (txParams)=>{
                     result = await this.sendTransaction(signedTx);
                     break;
                 }
+            case "eth_sendRawTransaction":
+                transaction = payload.params[0];
+                result = await this.sendTransaction(transaction);
+                break;
             default:
                 throw new Error(`Ethereum JSON-RPC signing method "${payload.method}" is not supported`);
         }
@@ -152,7 +157,8 @@ function $846b74bb536d5d88$export$fc81cf4ce65818e1(payload) {
         "eth_signTypedData_v3",
         "eth_signTypedData_v4",
         "eth_signTransaction",
-        "eth_sendTransaction"
+        "eth_sendTransaction",
+        "eth_sendRawTransaction"
     ];
     return supportedMethods.includes(payload.method);
 }

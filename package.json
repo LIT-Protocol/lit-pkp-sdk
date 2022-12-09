@@ -7,7 +7,9 @@
     "lit protocol",
     "pkp"
   ],
-  "author": "",
+  "bugs": {
+    "url": "https://github.com/LIT-Protocol/lit-pkp-sdk/issues"
+  },
   "license": "ISC",
   "files": [
     "/dist"
