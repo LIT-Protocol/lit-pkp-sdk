@@ -150,6 +150,11 @@ class LitPKP extends PKPWallet {
         result = await this.sendTransaction(signedTx);
         break;
       }
+      case 'eth_sendRawTransaction': {
+        transaction = payload.params[0];
+        result = await this.sendTransaction(transaction);
+        break;
+      }
       default:
         throw new Error(
           `Ethereum JSON-RPC signing method "${payload.method}" is not supported`
@@ -170,6 +175,7 @@ function isSignRequestSupported(payload) {
     'eth_signTypedData_v4',
     'eth_signTransaction',
     'eth_sendTransaction',
+    'eth_sendRawTransaction',
   ];
   return supportedMethods.includes(payload.method);
 }
