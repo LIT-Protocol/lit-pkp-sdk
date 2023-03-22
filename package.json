@@ -2,26 +2,22 @@
   "name": "lit-pkp-sdk",
   "version": "1.1.1",
   "description": "Extends PKPWallet to handle Ethereum JSON RPC signing requests",
+  "main": "dist/main.js",
+  "module": "dist/module.js",
+  "source": "src/index.js",
+  "scripts": {
+    "watch": "parcel watch",
+    "build": "parcel build",
+    "test": "jest"
+  },
   "keywords": [
     "ethereum",
     "lit protocol",
     "pkp"
   ],
+  "license": "ISC",
   "bugs": {
     "url": "https://github.com/LIT-Protocol/lit-pkp-sdk/issues"
-  },
-  "license": "ISC",
-  "files": [
-    "/dist"
-  ],
-  "type": "module",
-  "source": "src/index.js",
-  "main": "dist/main.js",
-  "module": "dist/module.js",
-  "scripts": {
-    "watch": "parcel watch",
-    "build": "parcel build",
-    "test": "node ./test/index.mjs"
   },
   "repository": {
     "type": "git",
@@ -29,17 +25,21 @@
   },
   "dependencies": {
     "@ethersproject/bytes": "^5.7.0",
-    "@ethersproject/transactions": "^5.7.0",
-    "@lit-protocol/pkp-ethers.js": "^5.7.48",
+    "@lit-protocol/pkp-ethers": "file:../js-sdk/packages/pkp-ethers/lit-protocol-pkp-ethers-2.1.95.tgz",
     "@metamask/eth-sig-util": "^5.0.2",
-    "add": "^2.0.6",
     "ethers": "^5.7.2",
-    "hex2dec": "^1.1.2",
-    "lit-js-sdk": "^1.2.32"
+    "hex2dec": "^1.1.2"
   },
   "devDependencies": {
+    "@babel/core": "^7.21.3",
+    "@babel/preset-env": "^7.20.2",
+    "@lit-protocol/lit-node-client": "^2.1.90",
+    "babel-jest": "^29.5.0",
+    "dotenv": "^16.0.3",
     "eslint": "^8.27.0",
     "eslint-config-prettier": "^8.5.0",
+    "jest": "^29.5.0",
+    "lit-siwe": "^1.1.8",
     "parcel": "^2.8.1",
     "prettier": "^2.7.1"
   },

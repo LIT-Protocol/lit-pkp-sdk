@@ -1,4 +1,4 @@
-import { PKPWallet } from '@lit-protocol/pkp-ethers.js';
+import { PKPWallet } from '@lit-protocol/pkp-ethers';
 import { joinSignature } from '@ethersproject/bytes';
 import { typedSignatureHash } from '@metamask/eth-sig-util';
 import { convertHexToUtf8, getTransactionToSign } from './helpers.js';
@@ -6,9 +6,6 @@ import { ethers } from 'ethers';
 
 /**
  * The PKP class inherits PKPWallet Signer and adds the ability to respond to Ethereum JSON RPC signing requests.
- *
- * @public
- * @override
  */
 class LitPKP extends PKPWallet {
   // -- Public methods --
