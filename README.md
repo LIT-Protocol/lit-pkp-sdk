@@ -1,3 +1,10 @@
+# Changelog
+
+## 2023-04-04
+
+- This repo will soon be deprecated as it's being integrated into https://github.com/LIT-Protocol/js-sdk/pull/57 and converted into Typescript
+
+
 # Lit PKP SDK
 
 Extends [PKPWallet](https://github.com/LIT-Protocol/pkp-ethers/tree/master/packages/wallet) to handle Ethereum JSON RPC requests for signing messages, data, and transactions and sending transactions.
